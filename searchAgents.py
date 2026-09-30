@@ -244,6 +244,7 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchType = FoodSearchProblem
 
 def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
+    """Food heuristic implementation"""
     position, foodGrid = state
     foodList = foodGrid.asList()
 
