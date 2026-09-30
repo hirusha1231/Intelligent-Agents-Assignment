@@ -78,26 +78,68 @@ def depthFirstSearch(problem: SearchProblem):
 
     Your search algorithm needs to return a list of actions that reaches the
     goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.Stack()
+    start_state = problem.getStartState()
+    fringe.push((start_state, []))
+    visited = set()
+
+    while not fringe.isEmpty():
+        current_state, actions = fringe.pop()
+
+        if problem.isGoalState(current_state):
+            return actions
+
+        if current_state not in visited:
+            visited.add(current_state)
+            for successor, action, step_cost in problem.getSuccessors(current_state):
+                if successor not in visited:
+                    fringe.push((successor, actions + [action]))
+
+    return []
 
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.Queue()
+    start_state = problem.getStartState()
+    fringe.push((start_state, []))
+    visited = set()
+
+    while not fringe.isEmpty():
+        current_state, actions = fringe.pop()
+
+        if problem.isGoalState(current_state):
+            return actions
+
+        if current_state not in visited:
+            visited.add(current_state)
+            for successor, action, step_cost in problem.getSuccessors(current_state):
+                if successor not in visited:
+                    fringe.push((successor, actions + [action]))
+
+    return []
 
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.PriorityQueue()
+    start_state = problem.getStartState()
+    fringe.push((start_state, [], 0), 0)
+    visited = {}
+
+    while not fringe.isEmpty():
+        current_state, actions, current_cost = fringe.pop()
+
+        if problem.isGoalState(current_state):
+            return actions
+
+        if (current_state not in visited) or (current_cost < visited[current_state]):
+            visited[current_state] = current_cost
+            for successor, action, step_cost in problem.getSuccessors(current_state):
+                new_cost = current_cost + step_cost
+                if (successor not in visited) or (new_cost < visited.get(successor, float('inf'))):
+                    fringe.push((successor, actions + [action], new_cost), new_cost)
+
+    return []
 
 def nullHeuristic(state, problem=None):
     """
@@ -108,8 +150,27 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    fringe = util.PriorityQueue()
+    start_state = problem.getStartState()
+    h_start = heuristic(start_state, problem)
+    fringe.push((start_state, [], 0), h_start)
+    visited = {}
+
+    while not fringe.isEmpty():
+        current_state, actions, current_cost = fringe.pop()
+
+        if problem.isGoalState(current_state):
+            return actions
+
+        if (current_state not in visited) or (current_cost < visited[current_state]):
+            visited[current_state] = current_cost
+            for successor, action, step_cost in problem.getSuccessors(current_state):
+                new_cost = current_cost + step_cost
+                if (successor not in visited) or (new_cost < visited.get(successor, float('inf'))):
+                    priority = new_cost + heuristic(successor, problem)
+                    fringe.push((successor, actions + [action], new_cost), priority)
+
+    return []
 
 
 # Abbreviations
