@@ -120,7 +120,7 @@ def breadthFirstSearch(problem: SearchProblem):
     return []
 
 def uniformCostSearch(problem: SearchProblem):
-    """Search the node of least total cost first."""
+    """Search the node of least total cost first.Implemented by Rehan."""
     fringe = util.PriorityQueue()
     start_state = problem.getStartState()
     fringe.push((start_state, [], 0), 0)
@@ -149,7 +149,7 @@ def nullHeuristic(state, problem=None):
     return 0
 
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
+    """Search the node that has the lowest combined cost and heuristic first.Implemented by Rehan."""
     fringe = util.PriorityQueue()
     start_state = problem.getStartState()
     h_start = heuristic(start_state, problem)
