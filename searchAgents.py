@@ -6,6 +6,7 @@ import util
 import time
 import search
 import pacman
+import itertools
 
 class GoWestAgent(Agent):
     def getAction(self, state):
@@ -174,25 +175,20 @@ class CornersProblem(search.SearchProblem):
             if self.walls[x][y]: return 999999
         return len(actions)
 
+
 def cornersHeuristic(state: Any, problem: CornersProblem):
-    current_pos, visited_corners = state
-    unvisited = [problem.corners[i] for i in range(len(problem.corners)) if not visited_corners[i]]
-
-    if not unvisited:
+    pos, visited = state
+    remaining = [c for c, v in zip(problem.corners, visited) if not v]
+    if not remaining:
         return 0
-
-    curr = current_pos
-    total_dist = 0
-    remaining = list(unvisited)
-
-    while remaining:
-        distances = [util.manhattanDistance(curr, corner) for corner in remaining]
-        min_dist = min(distances)
-        min_idx = distances.index(min_dist)
-        total_dist += min_dist
-        curr = remaining.pop(min_idx)
-
-    return total_dist
+    best = float('inf')
+    for perm in itertools.permutations(remaining):
+        cur, total = pos, 0
+        for c in perm:
+            total += util.manhattanDistance(cur, c)
+            cur = c
+        best = min(best, total)
+    return best
 
 class AStarCornersAgent(SearchAgent):
     def __init__(self):
@@ -243,18 +239,13 @@ class AStarFoodSearchAgent(SearchAgent):
         self.searchFunction = lambda prob: search.aStarSearch(prob, foodHeuristic)
         self.searchType = FoodSearchProblem
 
+
 def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
-    """Food heuristic implementation"""
     position, foodGrid = state
     foodList = foodGrid.asList()
-
     if not foodList:
         return 0
-
-    if 'maze_dist' not in problem.heuristicInfo:
-        problem.heuristicInfo['maze_dist'] = {}
-
-    memo = problem.heuristicInfo['maze_dist']
+    memo = problem.heuristicInfo.setdefault('maze_dist', {})
 
     def getDist(p1, p2):
         key = (p1, p2) if p1 <= p2 else (p2, p1)
@@ -262,24 +253,13 @@ def foodHeuristic(state: Tuple[Tuple, List[List]], problem: FoodSearchProblem):
             memo[key] = mazeDistance(p1, p2, problem.startingGameState)
         return memo[key]
 
-    max_dist = 0
-    farthest_food = None
-    for food in foodList:
-        dist = getDist(position, food)
-        if dist > max_dist:
-            max_dist = dist
-            farthest_food = food
+    toFarthest = max(getDist(position, f) for f in foodList)
+    diameter = 0
+    for i in range(len(foodList)):
+        for j in range(i + 1, len(foodList)):
+            diameter = max(diameter, getDist(foodList[i], foodList[j]))
+    return max(toFarthest, diameter)
 
-    if len(foodList) <= 1:
-        return max_dist
-
-    max_span = 0
-    for food in foodList:
-        span = getDist(farthest_food, food)
-        if span > max_span:
-            max_span = span
-
-    return max(max_dist, max_span)
 
 class ClosestDotSearchAgent(SearchAgent):
     def registerInitialState(self, state):
